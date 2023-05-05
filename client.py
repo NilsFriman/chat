@@ -1,5 +1,5 @@
 import socket
-
+import threading
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -8,9 +8,20 @@ s.connect(("10.158.18.101", 1234))
 
 
 
+def reciever():
+    while True:
+        msg = s.recv(1024)
+        print(msg.decode("utf-8"))
 
-while True:
-    msg = s.recv(1024)
-    print(msg.decode())
+def writer():
+    while True:
+        message = input("")
+        s.send(message.encode())
 
-print("logus")
+
+recieve_thread = threading.Thread(target=reciever)
+recieve_thread.start()
+
+
+writer_thread = threading.Thread(target=writer)
+writer_thread.start()

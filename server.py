@@ -12,32 +12,44 @@ server_socket.listen()
 
 clients = []
 users = []
-ipaddresses = []
 names = []
 
 
 def message_sender(msg: str):
     for client in clients:
-        client.send(msg)
+        client["connection"].send(msg)
+
+
+def handle_active_clients(client, ip):
+    for client in clients:
+        if client["ip"] == ip:
+            name = client["name"]
+
+    while True:
+        msg = client["connection"].recv(1024)
+        message_sender(f"{name}: {msg}".encode())
 
 
 def connections():
-    while True:
-        client_connection, client_address = server_socket.accept()
+    try:
+        while True:
+            client_connection, client_address = server_socket.accept()
 
-        if client_connection not in users:
-            clients.append(client_connection)
-            ipaddresses.append(client_address)
+            if client_connection not in users:
+                clients.append({"name": "Guest",
+                                "ip": client_address[0],
+                                "port": client_address[1],
+                                "connection": client_connection})
 
-        message_sender("Guest has entered the chat room")
-        thread = threading.Thread(target=handle_active_clients, args=(client_connection, "VAD SKA VARA HÄR"))
-        thread.start()
+            message_sender("Guest has entered the chat room".encode())
+            thread = threading.Thread(target=handle_active_clients, args=(client_connection, client_address[0]))
+            thread.start()
 
-
-def handle_active_clients(client):
-    while True:
-        msg = client.recv(1024)
-        message_sender(msg.encode())
+    except Exception:
+        for client in clients:
+            if "ip" == client_address[0]:
+                name = client["name"]
+        message_sender(f"{name} left the chat".encode())
 
 
 connections()
