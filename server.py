@@ -1,5 +1,4 @@
 import socket
-import pickle
 import threading 
 
 
@@ -24,14 +23,14 @@ def message_sender(msg: str):
 
 def connections():
     while True:
-        conn, addr = server_socket.accept()
+        client_connection, client_address = server_socket.accept()
 
-        if conn not in users:
-            clients.append(conn)
-            ipaddresses.append(addr)
+        if client_connection not in users:
+            clients.append(client_connection)
+            ipaddresses.append(client_address)
 
         message_sender("Guest has entered the chat room")
-        thread = threading.Thread(target=handle_active_clients, args=(conn,))
+        thread = threading.Thread(target=handle_active_clients, args=(client_connection, "VAD SKA VARA HÄR"))
         thread.start()
 
 
