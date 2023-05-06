@@ -21,13 +21,14 @@ def message_sender(msg: str):
 
 
 def handle_active_clients(client, ip):
+    name = ""
     for client in clients:
         if client["ip"] == ip:
             name = client["name"]
-
-    while True:
-        msg = client["connection"].recv(1024)
-        message_sender(f"{name}: {msg}".encode())
+    if name:
+        while True:
+            msg = client["connection"].recv(1024)
+            message_sender(f"{name}: {msg}")
 
 
 def connections():
@@ -41,7 +42,7 @@ def connections():
                                 "port": client_address[1],
                                 "connection": client_connection})
 
-            message_sender("Guest has entered the chat room".encode())
+            message_sender("Guest has entered the chat room")
             thread = threading.Thread(target=handle_active_clients, args=(client_connection, client_address[0]))
             thread.start()
 
@@ -49,7 +50,7 @@ def connections():
         for client in clients:
             if "ip" == client_address[0]:
                 name = client["name"]
-        message_sender(f"{name} left the chat".encode())
+        message_sender(f"{name} left the chat")
 
 
 connections()
