@@ -16,61 +16,76 @@ users = []
 names = []
 
 
-def message_sender(msg: str):
-    for client in clients:
-        client["connection"].send(msg)
 
+
+def message_sender(msg):
+    for client in clients:
+        client["connection"].send(msg.encode())
+
+
+
+available_commands = {
+    "/nick": "fixar resten här senare!",
+    "/admin": "fixar resten här senare!",
+    "/clear": "fixar resten här senare!",
+    "unkown": "fixar resten här senare!"
+}
 
 
 def handle_active_clients(client):
-    available_commands = {"/nick": "fixar resten här senare!",
-                          "/admin": "fixar resten här senare!",
-                          "/clear": "fixar resten här senare!",
-                          }
-
     while True:
         try:
-            msg = client["connection"].recv(1024)
+            msg: str = client["connection"].recv(1024).decode()
 
-
-            if msg.decode()[0] == "/":
-                print("mogus")
-                #available_commands[msg.decode().split()[0]]
+            if msg.startswith("/"):
+                available_commands.get(msg.split()[0], "unknown")
+                
 
             else:
-                message_sender(f"{client['name']}: {msg}".encode()) 
+                message_sender(f"{client['name']}: {msg}") 
 
-        except Exception:
+        except ConnectionResetError:
             disconnected_user = client['name']
             clients.remove(client)
+            client["connection"].close()
+            message_sender(f"{disconnected_user} left the room")
+            
 
-            message_sender(f"{disconnected_user} left the room".encode())
-            break
+
 
 
 def connections():
-    try:
-        while True:
-            client_connection, client_address = server_socket.accept()
 
-            if client_connection not in users:
-                user = {"name": "Guest",
+    while True:
+
+        client_connection, client_address = server_socket.accept()
+
+        user_dict = {user["ip"]: user for user in users}
+
+        if client_address[0] in user_dict:
+            user = user_dict[client_address[0]]
+            user["connection"] = client_connection
+
+            clients.append(user)
+
+        else:
+            new_user = {"name": "Guest",
                         "ip": client_address[0],
                         "port": client_address[1],
                         "connection": client_connection
                         }
+            
+            users.append(new_user)
+            clients.append(new_user)
 
-                clients.append(user)
-                users.append(user)
-                
-            message_sender("Guest has entered the chat room".encode())
+        message_sender(f"{new_user['name']} has entered the chat room")
+
+        thread = threading.Thread(target=handle_active_clients, args=(new_user,))
+        thread.start()
 
 
-            thread = threading.Thread(target=handle_active_clients, args=(user,))
-            thread.start()
 
-    except Exception:
-        pass
+
 
 
 
