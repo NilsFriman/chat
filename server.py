@@ -48,9 +48,6 @@ def handle_active_clients(client):
             break
 
 
-
-
-
 def connections():
     try:
         while True:
@@ -66,7 +63,6 @@ def connections():
                 clients.append(user)
                 users.append(user)
                 
-
             message_sender("Guest has entered the chat room".encode())
 
 
@@ -75,6 +71,7 @@ def connections():
 
     except Exception:
         pass
+
 
 
 
