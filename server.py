@@ -8,6 +8,7 @@ server_port = 1234
 
 server_socket.bind(("", server_port))
 server_socket.listen()
+print("Server is up and running!")
 
 
 clients = []
@@ -20,14 +21,34 @@ def message_sender(msg: str):
         client["connection"].send(msg)
 
 
-def handle_active_clients(client, ip):
-    for client in clients:
-        if client["ip"] == ip:
-            name = client["name"]
+
+def handle_active_clients(client):
+    available_commands = {"/nick": "fixar resten här senare!",
+                          "/admin": "fixar resten här senare!",
+                          "/clear": "fixar resten här senare!",
+                          }
 
     while True:
-        msg = client["connection"].recv(1024)
-        message_sender(f"{name}: {msg}".encode())
+        try:
+            msg = client["connection"].recv(1024)
+
+
+            if msg.decode()[0] == "/":
+                print("mogus")
+                #available_commands[msg.decode().split()[0]]
+
+            else:
+                message_sender(f"{client['name']}: {msg}".encode()) 
+
+        except Exception:
+            disconnected_user = client['name']
+            clients.remove(client)
+
+            message_sender(f"{disconnected_user} left the room".encode())
+            break
+
+
+
 
 
 def connections():
@@ -36,20 +57,25 @@ def connections():
             client_connection, client_address = server_socket.accept()
 
             if client_connection not in users:
-                clients.append({"name": "Guest",
-                                "ip": client_address[0],
-                                "port": client_address[1],
-                                "connection": client_connection})
+                user = {"name": "Guest",
+                        "ip": client_address[0],
+                        "port": client_address[1],
+                        "connection": client_connection
+                        }
+
+                clients.append(user)
+                users.append(user)
+                
 
             message_sender("Guest has entered the chat room".encode())
-            thread = threading.Thread(target=handle_active_clients, args=(client_connection, client_address[0]))
+
+
+            thread = threading.Thread(target=handle_active_clients, args=(user,))
             thread.start()
 
     except Exception:
-        for client in clients:
-            if "ip" == client_address[0]:
-                name = client["name"]
-        message_sender(f"{name} left the chat".encode())
+        pass
+
 
 
 connections()
