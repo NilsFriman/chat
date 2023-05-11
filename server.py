@@ -15,30 +15,41 @@ clients = []
 users = []
 names = []
 
-
-
-
-def message_sender(msg):
-    for client in clients:
-        client["connection"].send(msg.encode())
-
-
-
 available_commands = {
-    "/nick": "fixar resten här senare!",
-    "/admin": "fixar resten här senare!",
-    "/clear": "fixar resten här senare!",
-    "unkown": "fixar resten här senare!"
-}
+    "/nick": "nick",
+    "/admin": "admin",
+    "/clear": "clear",
+    }
+
+
+
+def message_sender(msg, specified_client=None):
+    if not specified_client:
+        for client in clients:
+            client["connection"].send(msg.encode())
+    else:
+        pass
+
+def command_handler(client, command):
+    if command == "nick":
+
+        client["connection"].send("Enter desired nickname".encode())
+
+        desired_nick = client["connection"].recv(1024).decode()
+
+        print(desired_nick)
 
 
 def handle_active_clients(client):
+
     while True:
         try:
             msg: str = client["connection"].recv(1024).decode()
 
             if msg.startswith("/"):
-                available_commands.get(msg.split()[0], "unknown")
+
+                command = available_commands.get(msg.split()[0])
+                command_handler(client, command)
                 
 
             else:
